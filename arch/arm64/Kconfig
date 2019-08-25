@@ -33,6 +33,7 @@ config ARM64
 	select ARCH_HAS_SYNC_DMA_FOR_CPU
 	select ARCH_HAS_SYSCALL_WRAPPER
 	select ARCH_HAS_TEARDOWN_DMA_OPS if IOMMU_SUPPORT
+	select ARCH_HAS_CRASH_NOTES if CRASH_NOTES
 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
 	select ARCH_INLINE_READ_LOCK if !PREEMPT
@@ -1783,6 +1784,17 @@ config BUILD_ARM64_UNCOMPRESSED_KERNEL
 	  image may improve performance in
 	  certain situations.
 endchoice
+
+config ARCH_HAS_CRASH_NOTES
+	bool
+
+config CRASH_NOTES
+	bool "Support storing crash notes at panic"
+	depends on !KEXEC
+	help
+	  Generate kdump style crash notes at the time of a panic and fill it
+	  with the crashed context to support analysis of the memory dump with
+	  tools like Redhat CRASH.
 
 config BUILD_ARM64_DT_OVERLAY
 	bool "enable DT overlay compilation support"

@@ -4,6 +4,11 @@
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 /*
  * This function is used through-out the kernel (including mm and fs)
@@ -32,6 +37,7 @@
 #include <linux/ratelimit.h>
 #include <linux/debugfs.h>
 #include <asm/sections.h>
+#include <linux/crash_notes.h>
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
@@ -239,6 +245,9 @@ void panic(const char *fmt, ...)
 	if (!_crash_kexec_post_notifiers) {
 		printk_safe_flush_on_panic();
 		__crash_kexec(NULL);
+		
+		/* Store crash context for all other no panic cpus */
+		crash_notes_save_cpus();
 
 		/*
 		 * Note smp_send_stop is the usual smp shutdown function, which
@@ -247,6 +256,9 @@ void panic(const char *fmt, ...)
 		 */
 		smp_send_stop();
 	} else {
+		/* Store crash context for all other no panic cpus */
+		crash_notes_save_cpus();
+		
 		/*
 		 * If we want to do crash dump after notifier calls and
 		 * kmsg_dump, we will need architecture dependent extra

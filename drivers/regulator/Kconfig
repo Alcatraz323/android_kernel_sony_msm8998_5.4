@@ -1230,5 +1230,9 @@ config VIRTIO_REGULATOR
 	  regulator for pass through peripheral devices via regulator backend in
 	  host.
 
+config SOMC_LCD_OCP_ENABLED
+	bool "enable SoMC LCD OCP function"
+	help
+	  Select this to enable SoMC LCD Over current protection function.
 endif
 

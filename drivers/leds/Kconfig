@@ -258,6 +258,13 @@ config LEDS_QPNP_FLASH_V2
 	  flash LED target current for several independent channels.  It also
 	  supports various over current and over temperature mitigation features.
 
+config LEDS_QPNP_RGB_SCALE
+	bool "Support for QPNP RGB LED brightness scale"
+	depends on LEDS_QPNP
+	default n
+	help
+	  Adds kernel support for scaling the RGB LED brightness.
+
 config LEDS_FSG
 	tristate "LED Support for the Freecom FSG-3"
 	depends on LEDS_CLASS

@@ -8,6 +8,11 @@
  *
  * Copyright (C) 2018 Red Hat, Inc.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2018 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifndef _SS_SIDTAB_H_
 #define _SS_SIDTAB_H_
 

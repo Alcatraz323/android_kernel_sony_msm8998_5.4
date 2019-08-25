@@ -88,3 +88,4 @@ obj-$(CONFIG_QRTR)		+= qrtr/
 obj-$(CONFIG_NET_NCSI)		+= ncsi/
 obj-$(CONFIG_XDP_SOCKETS)	+= xdp/
 obj-$(CONFIG_NEURON)		+= neuron/
+obj-$(CONFIG_NET_ACTIVITY_STATS)	+= activity_stats.o

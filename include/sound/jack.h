@@ -1,4 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifndef __SOUND_JACK_H
 #define __SOUND_JACK_H
 
@@ -49,6 +53,10 @@ enum snd_jack_types {
 	SND_JACK_UNSUPPORTED    = 0x0100,
 #endif
 
+	SND_JACK_ANC_HEADPHONE = SND_JACK_HEADPHONE | SND_JACK_MICROPHONE |
+				 SND_JACK_MICROPHONE2,
+	SND_JACK_STEREO_MICROPHONE = SND_JACK_MICROPHONE |
+				     SND_JACK_MICROPHONE2,
 	/* Kept separate from switches to facilitate implementation */
 	SND_JACK_BTN_0		= 0x4000,
 	SND_JACK_BTN_1		= 0x2000,

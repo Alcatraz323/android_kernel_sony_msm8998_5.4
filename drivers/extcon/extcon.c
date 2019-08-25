@@ -13,6 +13,11 @@
  * Copyright (C) 2008 Google, Inc.
  * Author: Mike Lockwood <lockwood@android.com>
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2016 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -216,6 +221,8 @@ struct extcon_cable {
 	unsigned long chg_bits[BITS_TO_LONGS(EXTCON_PROP_CHG_CNT)];
 	unsigned long jack_bits[BITS_TO_LONGS(EXTCON_PROP_JACK_CNT)];
 	unsigned long disp_bits[BITS_TO_LONGS(EXTCON_PROP_DISP_CNT)];
+	/* Somc Extention */
+	[EXTCON_VBUS_DROP]		= "VBUS-DROP",
 };
 
 static struct class *extcon_class;

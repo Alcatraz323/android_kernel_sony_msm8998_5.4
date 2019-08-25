@@ -2,6 +2,11 @@
 /*
  * Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #define pr_fmt(fmt) "QCOM-BATT: %s: " fmt, __func__
 
@@ -2123,9 +2128,16 @@ int qcom_batt_init(struct device *dev, struct charger_param *chg_param)
 		goto destroy_votable;
 	}
 
+#if !defined(CONFIG_SOMC_CHARGER_EXTENSION)
+	chip->fv_votable = create_votable("FV", VOTE_MAX,
+					pl_fv_vote_callback,
+					chip);
+#endif
+#if defined(CONFIG_SOMC_CHARGER_EXTENSION)
 	chip->fv_votable = create_votable("FV", VOTE_MIN,
 					pl_fv_vote_callback,
 					chip);
+#endif
 	if (IS_ERR(chip->fv_votable)) {
 		rc = PTR_ERR(chip->fv_votable);
 		chip->fv_votable = NULL;

@@ -13,3 +13,5 @@ qcom-smb1355-charger-y += smb1355-charger.o pmic-voter.o
 obj-$(CONFIG_SMB1351_USB_CHARGER)	+= smb1351-charger.o pmic-voter.o
 obj-$(CONFIG_SMB1390_CHARGE_PUMP_PSY)   += qcom-smb1390-charger.o
 qcom-smb1390-charger-y += smb1390-charger-psy.o pmic-voter.o
+obj-$(CONFIG_QPNP_QNOVO)	+= battery.o qpnp-qnovo.o
+obj-$(CONFIG_QNS_SYSTEM)	+= qns_system.o

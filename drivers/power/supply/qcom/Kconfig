@@ -101,4 +101,28 @@ config SMB358_CHARGER
 	  The driver supports charger enable/disable.
 	  The driver reports the charger status via the power supply framework.
 	  A charger status change triggers an IRQ via the device STAT pin.
+
+config QPNP_QNOVO
+	bool "QPNP QNOVO driver"
+	depends on MFD_SPMI_PMIC
+	help
+	  Say Y here to enable the Qnovo pulse charging engine. Qnovo driver
+	  accepts pulse parameters via sysfs entries and programs the hardware
+	  module. It also allows userspace code to read diagnostics of voltage
+	  and current measured during certain phases of the pulses.
+
+config QNS_SYSTEM
+	bool "Qnovo QNS wrapper implementation"
+	default n
+	help
+	  Say Y here to enable support for QNS system.
+	  QNS is a battery charging controller and it necessary to access a
+	  kernel driver for a battery charging.
+	  This adds sysfs interface which enables QNS daemon to access it.
+
+config SOMC_CHARGER_EXTENSION
+	bool "Charger driver extension"
+	help
+	  Say Y here to enable extensional function of charger driver.
+
 endif

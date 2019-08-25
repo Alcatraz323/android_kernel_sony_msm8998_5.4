@@ -4,6 +4,11 @@
  *
  *  Copyright (C) 2000 Andrew Henroid
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2014 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef _LINUX_PM_H
 #define _LINUX_PM_H
@@ -724,6 +729,11 @@ extern int dpm_suspend_noirq(pm_message_t state);
 extern int dpm_suspend_late(pm_message_t state);
 extern int dpm_suspend(pm_message_t state);
 extern int dpm_prepare(pm_message_t state);
+
+#ifdef CONFIG_PM_WAKEUP_TIMES
+extern void dpm_log_start_time(pm_message_t state);
+extern void dpm_log_wakeup_stats(pm_message_t state);
+#endif
 
 extern void __suspend_report_result(const char *function, void *fn, int ret);
 

@@ -6,6 +6,11 @@
  * Copyright (c) 2003 Open Source Development Lab
  * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2014 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #define pr_fmt(fmt) "PM: " fmt
 
@@ -444,6 +449,9 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 
 	system_state = SYSTEM_SUSPEND;
 
+#ifdef CONFIG_PM_WAKEUP_TIMES
+	dpm_log_wakeup_stats(PMSG_SUSPEND);
+#endif
 	error = syscore_suspend();
 	if (!error) {
 		*wakeup = pm_wakeup_pending();
@@ -461,6 +469,9 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 
 	system_state = SYSTEM_RUNNING;
 
+#ifdef CONFIG_PM_WAKEUP_TIMES
+	dpm_log_start_time(PMSG_RESUME);
+#endif
 	arch_suspend_enable_irqs();
 	BUG_ON(irqs_disabled());
 
@@ -505,6 +516,9 @@ int suspend_devices_and_enter(suspend_state_t state)
 
 	suspend_console();
 	suspend_test_start();
+#ifdef CONFIG_PM_WAKEUP_TIMES
+	dpm_log_start_time(PMSG_SUSPEND);
+#endif
 	error = dpm_suspend_start(PMSG_SUSPEND);
 	if (error) {
 		pr_err("Some devices failed to suspend, or early wake event detected\n");
@@ -523,6 +537,9 @@ int suspend_devices_and_enter(suspend_state_t state)
  Resume_devices:
 	suspend_test_start();
 	dpm_resume_end(PMSG_RESUME);
+#ifdef CONFIG_PM_WAKEUP_TIMES
+	dpm_log_wakeup_stats(PMSG_RESUME);
+#endif
 	suspend_test_finish("resume devices");
 	trace_suspend_resume(TPS("resume_console"), state, true);
 	resume_console();

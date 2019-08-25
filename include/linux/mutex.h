@@ -8,6 +8,11 @@
  *
  * This file contains the main data structure and API definitions.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifndef __LINUX_MUTEX_H
 #define __LINUX_MUTEX_H
 
@@ -181,6 +186,7 @@ extern void mutex_lock_io(struct mutex *lock);
  * Returns 1 if the mutex has been acquired successfully, and 0 on contention.
  */
 extern int mutex_trylock(struct mutex *lock);
+extern int mutex_trylock_spin(struct mutex *lock);
 extern void mutex_unlock(struct mutex *lock);
 
 extern int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);

@@ -47,6 +47,11 @@
  *  Paul Mundt <paul.mundt@nokia.com>:
  *  Overall revision about smaps.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/uaccess.h>
 
@@ -95,6 +100,8 @@
 #include <linux/sched/stat.h>
 #include <linux/posix-timers.h>
 #include <linux/cpufreq_times.h>
+#include <linux/oom_score_notifier.h>
+
 #include <trace/events/oom.h>
 #include "internal.h"
 #include "fd.h"
@@ -1134,6 +1141,7 @@ static ssize_t oom_adj_write(struct file *file, const char __user *buf,
 	char buffer[PROC_NUMBUF];
 	int oom_adj;
 	int err;
+	int old_oom_score_adj;
 
 	memset(buffer, 0, sizeof(buffer));
 	if (count > sizeof(buffer) - 1)
@@ -1162,6 +1170,16 @@ static ssize_t oom_adj_write(struct file *file, const char __user *buf,
 		oom_adj = (oom_adj * OOM_SCORE_ADJ_MAX) / -OOM_DISABLE;
 
 	err = __set_oom_adj(file, oom_adj, true);
+	old_oom_score_adj = task->signal->oom_score_adj;
+
+#ifdef CONFIG_OOM_SCORE_NOTIFIER
+	err = oom_score_notify_update(task, old_oom_score_adj);
+	if (err) {
+		/* rollback and error handle. */
+		task->signal->oom_score_adj = old_oom_score_adj;
+		goto err_sighand;
+	}
+#endif
 out:
 	return err < 0 ? err : count;
 }
@@ -1194,6 +1212,7 @@ static ssize_t oom_score_adj_write(struct file *file, const char __user *buf,
 	char buffer[PROC_NUMBUF];
 	int oom_score_adj;
 	int err;
+	int old_oom_score_adj;
 
 	memset(buffer, 0, sizeof(buffer));
 	if (count > sizeof(buffer) - 1)
@@ -1213,6 +1232,15 @@ static ssize_t oom_score_adj_write(struct file *file, const char __user *buf,
 	}
 
 	err = __set_oom_adj(file, oom_score_adj, false);
+	old_oom_score_adj = task->signal->oom_score_adj;
+#ifdef CONFIG_OOM_SCORE_NOTIFIER
+	err = oom_score_notify_update(task, old_oom_score_adj);
+	if (err) {
+		/* rollback and error handle. */
+		task->signal->oom_score_adj = old_oom_score_adj;
+		goto err_sighand;
+	}
+#endif
 out:
 	return err < 0 ? err : count;
 }

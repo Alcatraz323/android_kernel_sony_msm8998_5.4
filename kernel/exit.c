@@ -4,6 +4,11 @@
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/mm.h>
 #include <linux/slab.h>
@@ -63,6 +68,7 @@
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
+#include <linux/oom_score_notifier.h>
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -103,6 +109,8 @@ static void __exit_signal(struct task_struct *tsk)
 
 #ifdef CONFIG_POSIX_TIMERS
 	posix_cpu_timers_exit(tsk);
+	oom_score_notify_free(tsk);
+
 	if (group_dead) {
 		posix_cpu_timers_exit_group(tsk);
 	} else {

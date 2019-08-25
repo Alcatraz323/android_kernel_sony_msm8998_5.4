@@ -4,6 +4,11 @@
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 /*
  *  'fork.c' contains the help-routines for the 'fork' system call
@@ -88,6 +93,7 @@
 #include <linux/signalfd.h>
 #include <linux/uprobes.h>
 #include <linux/aio.h>
+#include <linux/oom_score_notifier.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
@@ -2243,6 +2249,10 @@ static __latent_entropy struct task_struct *copy_process(
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 		if (thread_group_leader(p)) {
+			retval = oom_score_notify_new(p);
+			if (retval)
+				goto bad_fork_cancel_cgroup;
+
 			init_task_pid(p, PIDTYPE_TGID, pid);
 			init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 			init_task_pid(p, PIDTYPE_SID, task_session(current));

@@ -36,6 +36,11 @@
  * The Linux Foundation chooses to take subject only to the GPLv2
  * license terms, and distributes only under these terms.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/async.h>
 #include <linux/devfreq.h>
@@ -45,6 +50,9 @@
 #include <linux/blk-pm.h>
 #include <asm/unaligned.h>
 #include <linux/blkdev.h>
+#include <linux/fs.h>
+#include <linux/firmware.h>
+
 #include "ufshcd.h"
 #include "ufs_quirks.h"
 #include "unipro.h"
@@ -148,6 +156,20 @@ int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(ufshcd_dump_regs);
+
+static u32 ufs_query_desc_max_size[] = {
+	QUERY_DESC_DEVICE_MAX_SIZE,
+	QUERY_DESC_CONFIGURAION_MAX_SIZE,
+	QUERY_DESC_UNIT_MAX_SIZE,
+	QUERY_DESC_RFU_MAX_SIZE,
+	QUERY_DESC_INTERCONNECT_MAX_SIZE,
+	QUERY_DESC_STRING_MAX_SIZE,
+	QUERY_DESC_RFU_MAX_SIZE,
+	QUERY_DESC_GEOMETRY_MAZ_SIZE,
+	QUERY_DESC_POWER_MAX_SIZE,
+	QUERY_DESC_HEALTH_MAX_SIZE,
+	QUERY_DESC_DEVICE_HEALTH_MAX_SIZE,
+};
 
 enum {
 	UFSHCD_MAX_CHANNEL	= 0,
@@ -3445,6 +3467,11 @@ static int ufshcd_read_device_desc(struct ufs_hba *hba, u8 *buf, u32 size)
 	return ufshcd_read_desc(hba, QUERY_DESC_IDN_DEVICE, 0, buf, size);
 }
 
+int ufshcd_read_device_health_desc(struct ufs_hba *hba, u8 *buf, u32 size)
+{
+	return ufshcd_read_desc(hba, QUERY_DESC_IDN_DEVICE_HEALTH, 0, buf, size);
+}
+
 /**
  * struct uc_string_id - unicode string
  *
@@ -4379,6 +4406,12 @@ static int ufshcd_change_power_mode(struct ufs_hba *hba,
 	ufshcd_dme_set(hba, UIC_ARG_MIB(DME_LocalAFC0ReqTimeOutVal),
 			DL_AFC0ReqTimeOutVal_Default);
 
+	if (hba->dev_quirks & UFS_DEVICE_QUIRK_EXTEND_SYNC_LENGTH) {
+		ufshcd_dme_set(hba, UIC_ARG_MIB(PA_TxHsG1SyncLength), 0x48);
+		ufshcd_dme_set(hba, UIC_ARG_MIB(PA_TxHsG2SyncLength), 0x48);
+		ufshcd_dme_set(hba, UIC_ARG_MIB(PA_TxHsG3SyncLength), 0x48);
+	}
+
 	ret = ufshcd_uic_change_pwr_mode(hba, pwr_mode->pwr_rx << 4
 			| pwr_mode->pwr_tx);
 
@@ -4692,6 +4725,8 @@ static int ufshcd_link_startup(struct ufs_hba *hba)
 	 */
 	if (!ufshcd_is_ufs_dev_active(hba))
 		link_startup_again = true;
+
+	ufshcd_dme_set(hba, UIC_ARG_MIB(PA_AVAILTXDATALANES), 0x1);
 
 link_startup:
 	do {
@@ -7938,6 +7973,92 @@ out:
 		ufshcd_hba_exit(hba);
 	}
 	pm_runtime_put_sync(hba->dev);
+}
+
+static int ufshcd_write_buffer(struct ufs_hba *hba, void __user *buffer)
+{
+	int err = 0;
+	unsigned char cmd[11] = {WRITE_BUFFER, 0x0E, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	struct ufs_ioctl_write_buffer_data *ioctl_data = NULL;
+	struct ufs_ioctl_write_buffer_data *fw_data = NULL;
+	struct Scsi_Host *shost = NULL;
+	struct scsi_device *sdev = NULL;
+	unsigned char sense[SCSI_SENSE_BUFFERSIZE];
+	struct scsi_sense_hdr sshdr;
+
+	ioctl_data = kmalloc(sizeof(struct ufs_ioctl_write_buffer_data), GFP_KERNEL);
+	if (!ioctl_data) {
+		dev_err(hba->dev, "%s: Failed allocating ioctl_data\n", __func__);
+		err = -ENOMEM;
+		goto out;
+	}
+
+	err = copy_from_user(ioctl_data, buffer, sizeof(struct ufs_ioctl_write_buffer_data));
+	if (err) {
+		dev_err(hba->dev, "%s: Failed copying ioctl_data from user, err %d\n", __func__, err);
+		goto out;
+	}
+
+	fw_data = kmalloc(sizeof(struct ufs_ioctl_write_buffer_data) + ioctl_data->buf_size, GFP_KERNEL);
+	if (!fw_data) {
+		dev_err(hba->dev, "%s: Failed allocating fw_data\n", __func__);
+		err = -ENOMEM;
+		goto out;
+	}
+
+	err = copy_from_user(fw_data, buffer, sizeof(struct ufs_ioctl_write_buffer_data) + ioctl_data->buf_size);
+	if (err) {
+		dev_err(hba->dev, "%s: Failed copying fw_data from user, err %d\n", __func__, err);
+		goto out;
+	}
+
+	cmd[6] = (ioctl_data->buf_size >> 16) & 0xff;
+	cmd[7] = (ioctl_data->buf_size >> 8) & 0xff;
+	cmd[8] = ioctl_data->buf_size & 0xff;
+
+	shost = scsi_host_lookup(0);
+	if (!shost) {
+		dev_err(hba->dev, "%s: Failed to get scsi_host\n", __func__);
+		err = -ENODEV;
+		goto out;
+	}
+
+	sdev = scsi_device_lookup(shost, 0, 0, 0);
+	if (!sdev) {
+		dev_err(hba->dev, "%s: Failed to get scsi_device\n", __func__);
+		err = -ENODEV;
+		goto out;
+	}
+
+	err = scsi_execute(sdev, cmd, DMA_TO_DEVICE, fw_data->buffer, ioctl_data->buf_size, sense, 10000, 1,
+						REQ_FAILFAST_DEV | REQ_FAILFAST_TRANSPORT | REQ_FAILFAST_DRIVER, NULL);
+	if (err) {
+		dev_err(hba->dev, "%s: Failed write buffer %d\n", __func__, err);
+		goto out;
+	}
+
+	if (scsi_normalize_sense(sense, SCSI_SENSE_BUFFERSIZE, &sshdr)) {
+		dev_err(hba->dev, "%s: print sense hdr\n", __func__);
+		scsi_print_sense_hdr(sdev, "ffu", &sshdr);
+	}
+
+out:
+	if (sdev) {
+		scsi_device_put(sdev);
+	}
+
+	if (shost) {
+		scsi_host_put(shost);
+	}
+
+	if (fw_data) {
+		kfree(fw_data);
+	}
+
+	if (ioctl_data) {
+		kfree(ioctl_data);
+	}
+	return err;
 }
 
 static enum blk_eh_timer_return ufshcd_eh_timed_out(struct scsi_cmnd *scmd)

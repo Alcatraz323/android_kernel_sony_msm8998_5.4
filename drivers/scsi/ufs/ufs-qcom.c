@@ -2,6 +2,11 @@
 /*
  * Copyright (c) 2013-2020, Linux Foundation. All rights reserved.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2016 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/acpi.h>
 #include <linux/time.h>
@@ -282,6 +287,7 @@ static int ufs_qcom_enable_lane_clks(struct ufs_qcom_host *host)
 		if (err)
 			goto disable_tx_l0;
 
+#ifndef CONFIG_SCSI_UFS_RESTRICT_TX_LANES
 		/* The tx lane1 clk could be muxed, hence keep this optional */
 		if (host->tx_l1_sync_clk) {
 			err = ufs_qcom_host_clk_enable(dev, "tx_lane1_sync_clk",

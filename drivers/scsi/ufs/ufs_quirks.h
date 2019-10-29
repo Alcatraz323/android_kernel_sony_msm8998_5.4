@@ -2,6 +2,11 @@
 /*
  * Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef _UFS_QUIRKS_H_
 #define _UFS_QUIRKS_H_
@@ -11,12 +16,43 @@
 
 #define UFS_ANY_VENDOR 0xFFFF
 #define UFS_ANY_MODEL  "ANY_MODEL"
+#define UFS_ANY_VER    "ANY_VER"
 
 #define UFS_VENDOR_MICRON      0x12C
 #define UFS_VENDOR_TOSHIBA     0x198
 #define UFS_VENDOR_SAMSUNG     0x1CE
 #define UFS_VENDOR_SKHYNIX     0x1AD
 #define UFS_VENDOR_WDC         0x145
+
+#define MAX_MODEL_LEN 16
+#define MAX_REVISION_LEN 8
+
+/* UFS TOSHIBA MODELS */
+#define UFS_MODEL_TOSHIBA_32GB "THGLF2G8D4KBADR"
+#define UFS_MODEL_TOSHIBA_64GB "THGLF2G9D8KBADG"
+
+/* UFS SAMSUNG MODELS */
+#define UFS_MODEL_SAMSUNG_64GB "KLUCG4J1"
+#define UFS_REVISION_SAMSUNG   "0101"
+
+/* UFS SK HYNIX MODELS */
+#define UFS_MODEL_HYNIX_32GB   "hB8aL1"
+#define UFS_MODEL_HYNIX_64GB   "hC8aL1"
+#define UFS_REVISION_HYNIX     "D001"
+
+#define UFS_PURGE_SPEC_VER     0x210
+
+/**
+ * ufs_card_info - ufs device details
+ * @wmanufacturerid: card details
+ * @model: card model
+ */
+struct ufs_card_info {
+	u16 wmanufacturerid;
+	u16 specver;
+	char *model;
+	char *revision;
+};
 
 /**
  * ufs_dev_fix - ufs device quirk info
@@ -32,11 +68,21 @@ struct ufs_dev_fix {
 #define END_FIX { }
 
 /* add specific device quirk */
-#define UFS_FIX(_vendor, _model, _quirk) { \
-	.wmanufacturerid = (_vendor),\
-	.model = (_model),		   \
-	.quirk = (_quirk),		   \
-}
+#define UFS_FIX(_vendor, _model, _quirk) \
+		{						  \
+				.card.wmanufacturerid = (_vendor),\
+				.card.model = (_model),		  \
+				.card.revision = (UFS_ANY_VER),		\
+				.quirk = (_quirk),		  \
+		}
+
+#define UFS_FIX_REVISION(_vendor, _model, _revision, _quirk) \
+		{						  \
+				.card.wmanufacturerid = (_vendor),\
+				.card.model = (_model),		  \
+				.card.revision = (_revision),		\
+				.quirk = (_quirk),		  \
+		}
 
 #ifdef CONFIG_SCSI_UFSHCD_QTI
 /*
@@ -173,5 +219,8 @@ struct ufs_dev_fix {
  * suspend flow.
  */
 #define UFS_DEVICE_QUIRK_DELAY_AFTER_LPM        (1 << 11)
+#define UFS_DEVICE_QUIRK_HS_G1_TO_HS_G3_SWITCH (1 << 8)
+#define UFS_DEVICE_QUIRK_EXTEND_SYNC_LENGTH	(1 << 23)
+#define UFS_DEVICE_QUIRK_NO_PURGE	(1 << 24)
 
 #endif /* UFS_QUIRKS_H_ */

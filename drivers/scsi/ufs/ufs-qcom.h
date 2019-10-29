@@ -1,6 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2016 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef UFS_QCOM_H_
 #define UFS_QCOM_H_
@@ -40,6 +45,9 @@
 #define UFS_QCOM_PHY_SUBMODE_G4		1
 
 #define UFS_QCOM_LIMIT_NUM_LANES_RX	2
+#ifdef CONFIG_SCSI_UFS_RESTRICT_TX_LANES
+#define UFS_QCOM_LIMIT_NUM_LANES_TX	1
+#else
 #define UFS_QCOM_LIMIT_NUM_LANES_TX	2
 #define UFS_QCOM_LIMIT_HSGEAR_RX	UFS_HS_G4
 #define UFS_QCOM_LIMIT_HSGEAR_TX	UFS_HS_G4

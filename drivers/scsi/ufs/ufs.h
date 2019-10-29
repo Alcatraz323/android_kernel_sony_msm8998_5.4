@@ -32,6 +32,11 @@
  * any damages of any kind arising from your use or distribution of
  * this program.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef _UFS_H
 #define _UFS_H
@@ -214,6 +219,23 @@ enum ufs_desc_def_size {
 	QUERY_DESC_GEOMETRY_DEF_SIZE		= 0x48,
 	QUERY_DESC_POWER_DEF_SIZE		= 0x62,
 	QUERY_DESC_HEALTH_DEF_SIZE		= 0x25,
+}
+
+enum ufs_desc_max_size {
+	QUERY_DESC_DEVICE_MAX_SIZE		= 0x40,
+	QUERY_DESC_CONFIGURAION_MAX_SIZE	= 0x90,
+	QUERY_DESC_UNIT_MAX_SIZE		= 0x23,
+	QUERY_DESC_INTERCONNECT_MAX_SIZE	= 0x06,
+	/*
+	 * Max. 126 UNICODE characters (2 bytes per character) plus 2 bytes
+	 * of descriptor header.
+	 */
+	QUERY_DESC_STRING_MAX_SIZE		= 0xFE,
+	QUERY_DESC_GEOMETRY_MAZ_SIZE		= 0x44,
+	QUERY_DESC_POWER_MAX_SIZE		= 0x62,
+	QUERY_DESC_HEALTH_MAX_SIZE		= 0x25,
+	QUERY_DESC_DEVICE_HEALTH_MAX_SIZE	= 0x25,
+	QUERY_DESC_RFU_MAX_SIZE			= 0x00,
 };
 
 /* Unit descriptor parameters offsets in bytes*/
@@ -279,6 +301,14 @@ enum device_desc_param {
 	DEVICE_DESC_PARAM_WB_PRESRV_USRSPC_EN	= 0x53,
 	DEVICE_DESC_PARAM_WB_TYPE		= 0x54,
 	DEVICE_DESC_PARAM_WB_SHARED_ALLOC_UNITS = 0x55,
+	DEVICE_DESC_PARAM_FFU_SUPPORT	= 0x1F,
+	DEVICE_DESC_PARAM_FFU_TIMEOUT	= 0x20,
+	DEVICE_DESC_PARAM_QUEUE_DEPTH	= 0x21,
+	DEVICE_DESC_PARAM_DEVICE_VER	= 0x22,
+	DEVICE_DESC_PARAM_NUM_SEC_WP_AREA	= 0x24,
+	DEVICE_DESC_PARAM_PSM_MAX_DATA_SIZE	= 0x25,
+	DEVICE_DESC_PARAM_PSA_STATE_TIMEOUT	= 0x29,
+	DEVICE_DESC_PARAM_PRODUCT_REVISION	= 0x2A,
 };
 
 /* Interconnect descriptor parameters offsets in bytes*/

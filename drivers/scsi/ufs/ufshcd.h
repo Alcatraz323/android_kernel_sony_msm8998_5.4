@@ -33,6 +33,11 @@
  * any damages of any kind arising from your use or distribution of
  * this program.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef _UFSHCD_H
 #define _UFSHCD_H
@@ -539,6 +544,37 @@ struct ufshcd_cmd_log {
 #define UFSHCD_DBG_PRINT_TMRS_EN		UFS_BIT(4)
 #define UFSHCD_DBG_PRINT_PWR_EN			UFS_BIT(5)
 #define UFSHCD_DBG_PRINT_HOST_STATE_EN		UFS_BIT(6)
+#ifdef CONFIG_DEBUG_FS
+struct debugfs_files {
+	struct dentry *debugfs_root;
+	struct dentry *stats_folder;
+	struct dentry *tag_stats;
+	struct dentry *err_stats;
+	struct dentry *show_hba;
+	struct dentry *host_regs;
+	struct dentry *dump_dev_desc;
+	struct dentry *power_mode;
+	struct dentry *dme_local_read;
+	struct dentry *dme_peer_read;
+	struct dentry *dbg_print_en;
+	struct dentry *req_stats;
+	struct dentry *query_stats;
+	u32 dme_local_attr_id;
+	u32 dme_peer_attr_id;
+	struct dentry *reset_controller;
+	struct dentry *err_state;
+	bool err_occurred;
+#ifdef CONFIG_UFS_FAULT_INJECTION
+	struct dentry *err_inj_scenario;
+	struct dentry *err_inj_stats;
+	u32 err_inj_scenario_mask;
+	struct fault_attr fail_attr;
+#endif
+	bool is_sys_suspended;
+	struct dentry *dump_dev_health_desc;
+	struct dentry *fw_revision;
+	struct dentry *serial;
+};
 
 #define UFSHCD_DBG_PRINT_ALL   \
 	(UFSHCD_DBG_PRINT_CLK_FREQ_EN|   \
@@ -1255,6 +1291,8 @@ static inline int ufshcd_dme_peer_get(struct ufs_hba *hba,
 {
 	return ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_PEER);
 }
+
+int ufshcd_read_device_health_desc(struct ufs_hba *hba, u8 *buf, u32 size);
 
 static inline bool ufshcd_is_hs_mode(struct ufs_pa_layer_attr *pwr_info)
 {
